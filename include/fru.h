@@ -13,48 +13,48 @@
 #define ARRAY_SZ(a) ((int)(sizeof(a) / sizeof((a)[0])))
 
 typedef struct fru_s {
-	uint8_t ver:4, rsvd:4;
-	uint8_t internal;
-	uint8_t chassis;
-	uint8_t board;
-	uint8_t product;
-	uint8_t multirec;
-	uint8_t pad;
-	uint8_t hchecksum; ///< Header checksum
-	uint8_t data[];
+    uint8_t ver:4, rsvd:4;
+    uint8_t internal;
+    uint8_t chassis;
+    uint8_t board;
+    uint8_t product;
+    uint8_t multirec;
+    uint8_t pad;
+    uint8_t hchecksum; ///< Header checksum
+    uint8_t data[];
 } fru_t;
 
 typedef enum fru_area_type_e {
-	FRU_AREA_NOT_PRESENT = -1,
-	FRU_INTERNAL_USE,
-	FRU_CHASSIS_INFO,
-	FRU_BOARD_INFO,
-	FRU_PRODUCT_INFO,
-	FRU_MULTIRECORD,
-	FRU_MAX_AREAS
+    FRU_AREA_NOT_PRESENT = -1,
+    FRU_INTERNAL_USE,
+    FRU_CHASSIS_INFO,
+    FRU_BOARD_INFO,
+    FRU_PRODUCT_INFO,
+    FRU_MULTIRECORD,
+    FRU_MAX_AREAS
 } fru_area_type_t;
 
 typedef enum {
-	FRU_CHASSIS_PARTNO,
-	FRU_CHASSIS_SERIAL
+    FRU_CHASSIS_PARTNO,
+    FRU_CHASSIS_SERIAL
 } fru_chassis_field_t;
 
 typedef enum {
-	FRU_BOARD_MFG,
-	FRU_BOARD_PRODNAME,
-	FRU_BOARD_SERIAL,
-	FRU_BOARD_PARTNO,
-	FRU_BOARD_FILE
+    FRU_BOARD_MFG,
+    FRU_BOARD_PRODNAME,
+    FRU_BOARD_SERIAL,
+    FRU_BOARD_PARTNO,
+    FRU_BOARD_FILE
 } fru_board_field_t;
 
 typedef enum {
-	FRU_PROD_MFG,
-	FRU_PROD_NAME,
-	FRU_PROD_MODELPN,
-	FRU_PROD_VERSION,
-	FRU_PROD_SERIAL,
-	FRU_PROD_ASSET,
-	FRU_PROD_FILE
+    FRU_PROD_MFG,
+    FRU_PROD_NAME,
+    FRU_PROD_MODELPN,
+    FRU_PROD_VERSION,
+    FRU_PROD_SERIAL,
+    FRU_PROD_ASSET,
+    FRU_PROD_FILE
 } fru_prod_field_t;
 
 #define FRU_IS_ATYPE_VALID(t) ((t) >= FRU_AREA_NOT_PRESENT && (t) < FRU_MAX_AREAS)
@@ -65,9 +65,9 @@ typedef enum {
  * Contains information about a single arbitrary area.
  */
 typedef struct fru_area_s {
-	fru_area_type_t atype; /**< FRU area type */
-	uint8_t blocks; /**< Size of the data field in 8-byte blocks */
-	void * data; /**< Pointer to the actual FRU area data */
+    fru_area_type_t atype; /**< FRU area type */
+    uint8_t blocks; /**< Size of the data field in 8-byte blocks */
+    void * data; /**< Pointer to the actual FRU area data */
 } fru_area_t;
 
 /**
@@ -76,8 +76,8 @@ typedef struct fru_area_s {
  * Every field in chassis, board and product information areas has such a header.
  */
 typedef struct fru_field_s {
-	uint8_t typelen;   /**< Type/length of the field */
-	uint8_t data[];    /**< The field data */
+    uint8_t typelen;   /**< Type/length of the field */
+    uint8_t data[];    /**< The field data */
 } fru_field_t;
 
 
@@ -90,8 +90,8 @@ typedef struct fru_field_s {
  * fields are linked.
  */
 typedef struct fru_reclist_s {
-	fru_field_t *rec; /**< A pointer to the field or NULL if not initialized */
-	struct fru_reclist_s *next; /**< The next record in the list or NULL if last */
+    fru_field_t *rec; /**< A pointer to the field or NULL if not initialized */
+    struct fru_reclist_s *next; /**< The next record in the list or NULL if last */
 } fru_reclist_t;
 
 /**
@@ -103,57 +103,57 @@ typedef struct fru_reclist_s {
  */
 static inline fru_reclist_t *add_reclist(fru_reclist_t **reclist)
 {
-	fru_reclist_t *rec;
-	fru_reclist_t *reclist_ptr = *reclist;
-	rec = malloc(sizeof(*rec));
-	if(!rec) return NULL;
-	memset(rec, 0, sizeof(*rec));
+    fru_reclist_t *rec;
+    fru_reclist_t *reclist_ptr = *reclist;
+    rec = malloc(sizeof(*rec));
+    if(!rec) return NULL;
+    memset(rec, 0, sizeof(*rec));
 
-	// If the reclist is empty, update it
-	if(!reclist_ptr) {
-		*reclist = rec;
-	} else {
-		// If the reclist is not empty, find the last entry and append the new one as next
-		while(reclist_ptr->next)
-			reclist_ptr = reclist_ptr->next;
+    // If the reclist is empty, update it
+    if(!reclist_ptr) {
+        *reclist = rec;
+    } else {
+        // If the reclist is not empty, find the last entry and append the new one as next
+        while(reclist_ptr->next)
+            reclist_ptr = reclist_ptr->next;
 
-		reclist_ptr->next = rec;
-	}
+        reclist_ptr->next = rec;
+    }
 
-	return rec;
+    return rec;
 }
 #define free_reclist(recp) while(recp) { fru_reclist_t *next = recp->next; free(recp); recp = next; }
 
 #define FRU_VER_1    1
 #define FRU_MINIMUM_AREA_HEADER \
-	uint8_t ver:4, rsvd:4;  /**< Area format version */
+    uint8_t ver:4, rsvd:4;  /**< Area format version */
 
 #define FRU_INFO_AREA_HEADER \
-	FRU_MINIMUM_AREA_HEADER; \
-	uint8_t blocks;         /**< Size in 8-byte blocks */ \
-	uint8_t langtype        /**< Area language code or chassis type (from smbios.h) */
+    FRU_MINIMUM_AREA_HEADER; \
+    uint8_t blocks;         /**< Size in 8-byte blocks */ \
+    uint8_t langtype        /**< Area language code or chassis type (from smbios.h) */
 
 #define LANG_DEFAULT 0
 #define LANG_ENGLISH 25
 
 typedef struct fru_info_area_s { // The generic info area structure
-	FRU_INFO_AREA_HEADER;
-	uint8_t data[];
+    FRU_INFO_AREA_HEADER;
+    uint8_t data[];
 } fru_info_area_t;
 
 #define FRU_INFO_AREA_HEADER_SZ sizeof(fru_info_area_t)
 
 typedef struct fru_internal_use_area_s {
-	FRU_MINIMUM_AREA_HEADER;
-	uint8_t data[];
+    FRU_MINIMUM_AREA_HEADER;
+    uint8_t data[];
 } fru_internal_use_area_t;
 
 typedef fru_info_area_t fru_chassis_area_t;
 
 typedef struct fru_board_area_s {
-	FRU_INFO_AREA_HEADER;
-	uint8_t mfgdate[3]; ///< Manufacturing date/time in seconds since 1996/1/1 0:00
-	uint8_t data[];     ///< Variable size (multiple of 8 bytes) data with tail padding and checksum
+    FRU_INFO_AREA_HEADER;
+    uint8_t mfgdate[3]; ///< Manufacturing date/time in seconds since 1996/1/1 0:00
+    uint8_t data[];     ///< Variable size (multiple of 8 bytes) data with tail padding and checksum
 } fru_board_area_t;
 
 typedef fru_info_area_t fru_product_area_t;
@@ -194,33 +194,33 @@ typedef fru_info_area_t fru_product_area_t;
 #define FRU_BLOCKS(bytes)  (((bytes) + FRU_BLOCK_SZ - 1) / FRU_BLOCK_SZ)
 
 typedef struct {
-	uint8_t type;
-	char pn[FRU_FIELDMAXSTRLEN];
-	char serial[FRU_FIELDMAXSTRLEN];
-	fru_reclist_t *cust;
+    uint8_t type;
+    char pn[FRU_FIELDMAXSTRLEN];
+    char serial[FRU_FIELDMAXSTRLEN];
+    fru_reclist_t *cust;
 } fru_exploded_chassis_t;
 
 typedef struct {
-	uint8_t lang;
-	struct timeval tv;
-	char mfg[FRU_FIELDMAXSTRLEN];
-	char pname[FRU_FIELDMAXSTRLEN];
-	char serial[FRU_FIELDMAXSTRLEN];
-	char pn[FRU_FIELDMAXSTRLEN];
-	char file[FRU_FIELDMAXSTRLEN];
-	fru_reclist_t *cust;
+    uint8_t lang;
+    struct timeval tv;
+    char mfg[FRU_FIELDMAXSTRLEN];
+    char pname[FRU_FIELDMAXSTRLEN];
+    char serial[FRU_FIELDMAXSTRLEN];
+    char pn[FRU_FIELDMAXSTRLEN];
+    char file[FRU_FIELDMAXSTRLEN];
+    fru_reclist_t *cust;
 } fru_exploded_board_t;
 
 typedef struct {
-	uint8_t lang;
-	char mfg[FRU_FIELDMAXSTRLEN];
-	char pname[FRU_FIELDMAXSTRLEN];
-	char pn[FRU_FIELDMAXSTRLEN];
-	char ver[FRU_FIELDMAXSTRLEN];
-	char serial[FRU_FIELDMAXSTRLEN];
-	char atag[FRU_FIELDMAXSTRLEN];
-	char file[FRU_FIELDMAXSTRLEN];
-	fru_reclist_t *cust;
+    uint8_t lang;
+    char mfg[FRU_FIELDMAXSTRLEN];
+    char pname[FRU_FIELDMAXSTRLEN];
+    char pn[FRU_FIELDMAXSTRLEN];
+    char ver[FRU_FIELDMAXSTRLEN];
+    char serial[FRU_FIELDMAXSTRLEN];
+    char atag[FRU_FIELDMAXSTRLEN];
+    char file[FRU_FIELDMAXSTRLEN];
+    fru_reclist_t *cust;
 } fru_exploded_product_t;
 
 #define fru_loadfield(eafield, value) strncpy(eafield, value, FRU_FIELDMAXLEN)
