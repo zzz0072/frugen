@@ -101,7 +101,7 @@ uint8_t fru_get_typelen(int len,             /**< [in] Length of the data or LEN
     // As we reach this point, we know the data must be text.
     // We will try to find the encoding that suits best.
 
-    typelen = FRU_TYPELEN(BCDPLUS, (len + 1) / 2); // By default - the most range-restricted text type
+    typelen = FRU_TYPELEN(BCDPLUS, len); // By default - the most range-restricted text type
 
     DEBUG("Assuming BCD plus data...\n");
 
@@ -211,25 +211,25 @@ fru_field_t * fru_encode_data(int len, const char *data)
         out->typelen = typelen;
         if (FRU_ISTYPE(typelen, BCDPLUS)) {
             int i;
-            uint8_t c[2] = {0};
+            uint8_t c = 0;
 
             /* Copy the data and pack it as BCD */
-            for (i = 0; i < 2 * FRU_FIELDDATALEN(typelen); i++) {
+            for (i = 0; i < FRU_FIELDDATALEN(typelen); i++) {
                 switch(data[i]) {
                     case 0: // The null-terminator encountered earlier than end of BCD field, encode as space
                     case ' ':
-                        c[i % 2] = 0xA;
+                        c = 0xA;
                         break;
                     case '-':
-                        c[i % 2] = 0xB;
+                        c = 0xB;
                         break;
                     case '.':
-                        c[i % 2] = 0xC;
+                        c = 0xC;
                         break;
                     default: // Digits
-                        c[i % 2] = data[i] - '0';
+                        c = data[i] - '0';
                 }
-                out->data[i / 2] = c[0] << 4 | c[1];
+                out->data[i] = c;
             }
         }
         else {
