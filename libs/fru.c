@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-//#define DBG 
+//#define DBG
 #ifdef DBG
 #include <stdio.h>
 #define DEBUG(f, args...) do { printf("%s:%d: ", __func__, __LINE__); printf(f,##args); } while(0)
